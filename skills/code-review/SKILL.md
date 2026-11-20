@@ -47,7 +47,17 @@ Do not inflate severity to get attention, and do not report the same problem twi
 
 ## The findings file
 
-Write findings to the path the user gives, or by default to `.code-review/findings.yaml` at the repository root. When you create the `.code-review/` folder, also create `.code-review/.gitignore` containing `*`, so the review never shows up in `git status`.
+Every run gets its own folder, named after what it reviews.
+
+1. Run `git branch --show-current`, and turn the branch name into a folder name by replacing every `/` with `-`.
+2. Add `git rev-parse --short HEAD`. Add `dirty` when `git status --porcelain --untracked-files=no` is not empty, that is when the review covers uncommitted changes to tracked files.
+3. So a review of `fix/login` at `9d3e0f1` with uncommitted changes is the run `fix-login-9d3e0f1-dirty`, and it writes to `.code-review/fix-login-9d3e0f1-dirty/findings.yaml` at the repository root. A detached `HEAD` has no branch name, so the run is `<short sha>[-dirty]` alone.
+
+Use the path the user or a harness gives instead, when either names one.
+
+Work the run out once, at the start, and use the same folder for every pass of that run: it holds the findings the next pass reads. Never recompute it mid-review, so that creating the findings file cannot change which folder this run uses. Never overwrite or delete the folder of an earlier run.
+
+Create `.code-review/.gitignore` containing `*` the first time, so no review, at any commit, ever shows up in `git status`.
 
 The file is YAML with this exact shape:
 
@@ -63,7 +73,7 @@ findings:
 
 `severity`, `file`, `title` and `why` are required. An empty file and `findings: []` both mean no findings.
 
-If the file already exists, it holds findings from an earlier review of the same change:
+If the file already exists, it holds findings from an earlier pass of the same run:
 
 1. Read it before you review.
 2. A finding is already listed when it points at the same problem, even if the wording or line differs.
@@ -74,7 +84,7 @@ When you finish, tell the user how many findings you recorded, how many block th
 
 ## Rules
 
-- The only files you may create or edit are the findings file and, for the default path, `.code-review/.gitignore`.
+- The only files you may create or edit are the findings file and `.code-review/.gitignore`.
 - Never edit, create, delete, format or stage any other file.
 - Never commit, push, switch branches, stash or run any command that changes git state.
 - Running read-only commands (git log, git diff, grep, the test suite) is fine, as long as they leave no changes behind.
