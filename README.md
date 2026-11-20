@@ -27,7 +27,7 @@ Agents keep adding parts you never learned. The quiz finds the parts of your sys
 
 ## code-review
 
-Run the `code-review` skill on a branch. It reviews everything since the branch split from its base, including uncommitted changes, and writes the findings to `.code-review/<run>/findings.yaml`, where the run names the branch, the commit and whether the working tree was dirty. Every run gets its own folder, and `.code-review/` ignores itself.
+Run the `code-review` skill on a branch. It reviews everything since the branch split from its base, including uncommitted changes, and writes the findings to `.code-review/<branch>-<commit>[-dirty].yaml`, where `dirty` means the review covered uncommitted changes. Every run gets its own file, and `.code-review/` ignores itself.
 
 - Each finding has a severity, a file and line, a title, why it matters and an optional suggestion.
 - Severity comes from one question: should this stop the merge? P0 and P1 mean yes; P2 and P3 mean no.
